@@ -1,100 +1,64 @@
-const correctAnswers = ['B', 'A', 'C', 'A']
-const finalScoreContainer = document.querySelector('.final-score-container')
-const scoreContent = finalScoreContainer.querySelector('.score')
-const form = document.querySelector('.quiz-form')
+const correctAnswers = ["B", "A", "C", "A"];
+const finalScoreContainer = document.querySelector(".final-score-container");
+const scoreContent = finalScoreContainer.querySelector(".score");
+const form = document.querySelector(".quiz-form");
 
-let score = null
+const getUserAnswers = () =>
+  correctAnswers.map((_, index) => form[`inputQuestion${index + 1}`].value);
 
-const getUserAnswers = () => {
-  const userAnswers = []
+const getUserScore = (userAnswers) =>
+  userAnswers.reduce(
+    (score, userAnswer, i) =>
+      userAnswer === correctAnswers[i] ? score + 25 : score,
+    0
+  );
 
-  correctAnswers.forEach((_, index) => {
-    const userAnswer = form[`inputQuestion${index + 1}`].value
-    userAnswers.push(userAnswer)
+const addClasses = ({ bgClass, textClass }) => {
+  const classesToRemove = ['bg-danger-subtle', 'text-danger', 'bg-warning-subtle', 'text-warning']
+
+  classesToRemove.forEach(classToRemove => {
+    finalScoreContainer.classList.remove(classToRemove);
+    scoreContent.classList.remove(classToRemove);
   })
 
-  return userAnswers
+  finalScoreContainer.classList.add(bgClass);
+  scoreContent.classList.add(textClass);
 }
 
-const calculateUserScore = userAnswers => {
-  score = 0
-  userAnswers.forEach((userAnswer, index) => {
-    const isUserAnswerCorrect = userAnswer === correctAnswers[index]
+const changeScoreStyle = counter => {
+  if (counter === 0) {
+    addClasses({ bgClass: 'bg-danger-subtle', textClass: 'text-danger'})    
+  }
+  
+  if (counter === 33) {
+    addClasses({ bgClass: 'bg-warning-subtle', textClass: 'text-warning'})   
+  } 
 
-    if (isUserAnswerCorrect) {
-      score += 25
-    }
-  })
-}
+  if (counter === 75) {
+    addClasses({ bgClass: 'bg-success-subtle', textClass: 'text-success'})     
+  }
+};
 
-const showFinalScore = () => {
-  scrollTo({
-    top: 0,
-    left: 0,
-    behavior: "smooth"
-  })
+const showScore = (score) => {
+  scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  finalScoreContainer.classList.remove("d-none");
 
-  finalScoreContainer.classList.remove('d-none')
-}
-
-const animateFinalScore = () => {
-  let counter = 0
+  let counter = 0;
 
   const timer = setInterval(() => {
     if (counter === score) {
-      clearInterval(timer)
+      clearInterval(timer);
     }
 
-    changeScoreStyle(counter)
-
-    scoreContent.textContent = `${counter++}%`
+    changeScoreStyle(counter);
+    scoreContent.textContent = `${counter++}%`;
   }, 20);
-}
+};
 
-const changeScoreStyle = (counter) => {
-  if (counter <= 33) {
-    addBgDangerSubtleClass()
-  } else if (counter <= 75) {
-    removeBgDangerSubtleClass()
-    addBgWarningSubtleClass()
-  } else {
-    removeBgDangerSubtleClass()
-    removeBgWarningSubtleClass()
-    addBgSuccessSubtleClass()
-  }
-}
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const userAnswers = getUserAnswers();
+  const score = getUserScore(userAnswers);
 
-const addBgDangerSubtleClass = () => {
-  finalScoreContainer.classList.add('bg-danger-subtle')
-  scoreContent.classList.add('text-danger')
-}
-
-const removeBgDangerSubtleClass = () => {
-  finalScoreContainer.classList.remove('bg-danger-subtle')
-  scoreContent.classList.remove('text-danger')
-}
-
-const addBgWarningSubtleClass = () => {
-  finalScoreContainer.classList.add('bg-warning-subtle')
-  scoreContent.classList.add('text-warning')
-}
-
-const removeBgWarningSubtleClass = () => {
-  finalScoreContainer.classList.remove('bg-warning-subtle')
-  scoreContent.classList.remove('text-warning')
-}
-
-const addBgSuccessSubtleClass = () => {
-  finalScoreContainer.classList.add('bg-success-subtle')
-  scoreContent.classList.add('text-success')
-}
-
-form.addEventListener('submit', event => {
-  event.preventDefault()
-
-  const userAnswers = getUserAnswers()
-
-  calculateUserScore(userAnswers)
-  showFinalScore()
-  animateFinalScore()
-})
+  showScore(score);
+});
